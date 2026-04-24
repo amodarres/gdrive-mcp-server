@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "gdrive": {
+      "type": "http",
+      "url": "https://gdrive-mcp-server-production-4924.up.railway.app/sse"
+    }
+  }
+}

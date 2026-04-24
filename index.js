@@ -1,6 +1,6 @@
 import express from 'express';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { google } from 'googleapis';
 import { z } from 'zod';
 
@@ -106,27 +106,11 @@ function buildServer() {
 const app = express();
 app.use(express.json());
 
-// Map of sessionId → { server, transport }
-const sessions = new Map();
-
-app.get('/sse', async (req, res) => {
+app.post('/mcp', async (req, res) => {
   const server = buildServer();
-  const transport = new SSEServerTransport('/messages', res);
-
-  sessions.set(transport.sessionId, { server, transport });
-  transport.onclose = () => sessions.delete(transport.sessionId);
-
+  const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
   await server.connect(transport);
-});
-
-app.post('/messages', async (req, res) => {
-  const sessionId = req.query.sessionId;
-  const session = sessions.get(sessionId);
-  if (!session) {
-    res.status(404).json({ error: `No active session: ${sessionId}` });
-    return;
-  }
-  await session.transport.handlePostMessage(req, res);
+  await transport.handleRequest(req, res, req.body);
 });
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
