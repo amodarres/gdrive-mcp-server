@@ -27,17 +27,22 @@ function buildServer() {
     'Creates a new Google Slides presentation with the given title',
     { title: z.string().describe('Title of the new presentation') },
     async ({ title }) => {
-      const slides = google.slides({ version: 'v1', auth: getAuthClient() });
-      const res = await slides.presentations.create({ requestBody: { title } });
-      return {
-        content: [{
-          type: 'text',
-          text: JSON.stringify({
-            presentationId: res.data.presentationId,
-            title: res.data.title,
-          }),
-        }],
-      };
+      try {
+        const slides = google.slides({ version: 'v1', auth: getAuthClient() });
+        const res = await slides.presentations.create({ requestBody: { title } });
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              presentationId: res.data.presentationId,
+              title: res.data.title,
+            }),
+          }],
+        };
+      } catch (error) {
+        console.error(JSON.stringify(error, null, 2));
+        throw error;
+      }
     }
   );
 
