@@ -122,4 +122,15 @@ app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`gdrive-mcp-server listening on 0.0.0.0:${PORT}`);
+  try {
+    const keyJson = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+    if (!keyJson) {
+      console.error('[startup] GOOGLE_SERVICE_ACCOUNT_KEY is not set');
+    } else {
+      const credentials = JSON.parse(keyJson);
+      console.log(`[startup] service account email: ${credentials.client_email}`);
+    }
+  } catch (e) {
+    console.error('[startup] failed to parse GOOGLE_SERVICE_ACCOUNT_KEY:', e.message);
+  }
 });
